@@ -79,7 +79,7 @@ old_data['nan_free_store_primary_category'] = old_data.store_id.apply(fill)
 
 
 ##One hot encode the colunm
-store_primary_category_dummies = pd.get_dummies(old_data.nan_free_store_primary_category).add_prefix('category_')
+store_primary_category_dummies = pd.get_dummies(old_data.nan_free_store_primary_category)
 store_primary_category_dummies = store_primary_category_dummies.add_prefix('category_')
 store_primary_category_dummies.head()
 
@@ -106,7 +106,7 @@ np.where(np.any(~np.isfinite(train_df), axis=0) == True)
 train_df.replace([np.inf, -np.inf], np.nan, inplace =True)
 ##Drop all nans
 train_df.dropna(inplace=True)
-print(train_df.shape)
+# print(train_df.shape)
 
 ##--------------------------------------------------------------------------------------------------------------------------------------------------
 """There are 100 cols in the final dataset, so maybe have redundant features are not useful bc of repeating another feature
@@ -129,5 +129,33 @@ cmap = sns.diverging_palette(230,20, as_cmap= True)
 sns. heatmap(corr, mask=mask, cmap=cmap, vmax = 0.6, center = 0, square=True, linewidths=0.5, cbar_kws={"shrink": 0.5})
 
 ##Show plot (correlation heat map)
-plt.savefig('Correlation heat map.png', dpi=300,bbox_inches='tight')
-plt.show()
+# plt.savefig('Correlation heat map.png', dpi=300,bbox_inches='tight')
+# plt.show()
+
+##Check STD=0
+# print(train_df['category_vietnamese'].describe())
+# print(train_df['category_japanese'].describe())
+# print(train_df['category_indonesian'].describe()) #This has SRD=0, drop this
+
+def get_redundant_pairs(df):
+    """Get diagonal and lower triangular pairs of correlation matrix"""
+    pairs_to_drop = set()
+    cols = df.columns
+    for i in range(0, df.shape[1]):
+        for j in range(0, i+1):
+            pairs_to_drop.add((cols[i], cols[j]))
+    return pairs_to_drop
+
+def get_top_abs_correlations(df, n=5):
+    """Sort correlations in the descending order and return n highest results"""
+    au_corr = df.corr().abs().unstack()
+    labels_to_drop = get_redundant_pairs(df)
+    au_corr = au_corr.drop(labels=labels_to_drop).sort_values(ascending=False)
+    return au_corr[0:n]
+
+print("Top Absolute Correlations")
+print(get_top_abs_correlations(train_df, 20))
+
+
+
+
