@@ -153,9 +153,65 @@ def get_top_abs_correlations(df, n=5):
     au_corr = au_corr.drop(labels=labels_to_drop).sort_values(ascending=False)
     return au_corr[0:n]
 
+# print("Top Absolute Correlations")
+# print(get_top_abs_correlations(train_df, 20))
+
+##Drop created at, market_id, store_id, order_protocol, actual_delivery_time, nan_free_store_primary_category
+train_df = old_data.drop(columns = ['created_at','market_id','store_id','actual_delivery_time',
+'nan_free_store_primary_category', 'order_protocol','store_primary_category'])
+
+##Not concat market id
+train_df = pd.concat([train_df, order_protocol_dummies, store_primary_category_dummies], axis =1)
+
+##Drop highly correlated features
+train_df = train_df.drop(columns = ["total_onshift_dashers","total_busy_dashers","category_indonesian","estimated_non_prep_duration"])
+
+# Make sure all columns are numeric before conversion
+# print(train_df.select_dtypes(include=['object']).columns)
+
+##Align dtype over dataset
+train_df = train_df.astype("float32")
+# print(train_df.head())
+
+##Replace inf values with Nan to drop all nans
+train_df.replace([np.inf, -np.inf], np.nan, inplace =True)
+##Drop all nans
+train_df.dropna(inplace=True)
+# print(train_df.head())
+
+##Save the cleaned dataset
+# train_df.to_csv('/Users/panda/Documents/Work/Side_Learn_Projects/Side/Doordash/datasets/cleaned_data.csv', index=False)
+
+# print(train_df.shape) 
+# (177070, 90)
+
+# print('Top Absolute Correlations')
+# print(get_top_abs_correlations(train_df, 20))
+
+# drop created_at, market_id, store_id, store_primary_category, actual_delivery_time, order_protocol
+train_df = old_data.drop(columns = ["created_at", "market_id", "store_id", "store_primary_category", "actual_delivery_time", 
+                                        "nan_free_store_primary_category", "order_protocol"])
+# don't concat order_protocol_dummies
+train_df = pd.concat([train_df, store_primary_category_dummies], axis=1)
+train_df = train_df.drop(columns=["total_onshift_dashers", "total_busy_dashers",
+                                  "category_indonesian", 
+                                  "estimated_non_prep_duration"])
+# align dtype over dataset
+train_df = train_df.astype("float32")
+# replace inf values with nan to drop all nans
+train_df.replace([np.inf, -np.inf], np.nan, inplace=True)
+train_df.dropna(inplace=True)
+# print(train_df.head())
+
+##New features
+train_df['percent_distinct_item_of_total'] = train_df['num_distinct_items'] / train_df['total_items']
+train_df['avg_price_per_item'] = train_df['subtotal'] / train_df['total_items']
+train_df.drop(columns=['num_distinct_items', 'subtotal'], inplace=True)
+# print('Top Absolute Correlations')
+# print(get_top_abs_correlations(train_df, 20))
+
+train_df["price_range_of_items"] = train_df["max_item_price"] - train_df["min_item_price"]
+train_df.drop(columns=["max_item_price", "min_item_price"], inplace=True)
 print("Top Absolute Correlations")
 print(get_top_abs_correlations(train_df, 20))
-
-
-
-
+print(train_df.shape)
