@@ -21,7 +21,7 @@ from datetime import datetime
 #Set randome seed to have reproducible results
 np.random.seed(42)
 ## Read data
-old_data = pd.read_csv('/Users/panda/Documents/Work/Side_Learn_Projects/Strata Scratch/Doordash/datasets/historical_data.csv')
+old_data = pd.read_csv('/Users/panda/Documents/Work/Side_Learn_Projects/Side/Doordash/datasets/historical_data.csv')
 # print(old_data.head())
 # print(old_data.info())
 
